@@ -29,8 +29,9 @@
     "cardinal-components": ["fabrichomes:homes"]
   },
   "depends": {
+    "minecraft": "^1.16.2",
     "fabricloader": ">=0.10.6",
     "fabric": "*",
-    "minecraft": "^1.16.2"
+    "fabric-permissions-api-v0": "*"
   }
 }

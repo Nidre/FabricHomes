@@ -34,6 +34,8 @@ import static eu.codedsakura.fabrichomes.components.PlayerComponentInitializer.H
 import static net.minecraft.server.command.CommandManager.argument;
 import static net.minecraft.server.command.CommandManager.literal;
 
+import me.lucko.fabric.api.permissions.v0.Permissions;
+
 public class FabricHomes implements ModInitializer {
     public static final Logger logger = LogManager.getLogger("FabricHomes");
     private static final String CONFIG_NAME = "FabricHomes.properties";
@@ -59,31 +61,35 @@ public class FabricHomes implements ModInitializer {
 
         CommandRegistrationCallback.EVENT.register((dispatcher, dedicated) -> {
             dispatcher.register(literal("home")
-                    .executes(ctx -> homeInit(ctx, null))
-                    .then(argument("name", StringArgumentType.greedyString()).suggests(this::getHomeSuggestions)
-                            .executes(ctx -> homeInit(ctx, StringArgumentType.getString(ctx, "name")))));
+                    .requires(Permissions.require("fhomes.home", true))
+                            .executes(ctx -> homeInit(ctx, null))
+                            .then(argument("name", StringArgumentType.greedyString()).suggests(this::getHomeSuggestions)
+                                    .executes(ctx -> homeInit(ctx, StringArgumentType.getString(ctx, "name")))));
 
             dispatcher.register(literal("sethome")
-                    .executes(ctx -> homeSet(ctx, null))
-                    .then(argument("name", StringArgumentType.greedyString())
-                            .executes(ctx -> homeSet(ctx, StringArgumentType.getString(ctx, "name")))));
+                    .requires(Permissions.require("fhomes.sethome", true))
+                            .executes(ctx -> homeSet(ctx, null))
+                            .then(argument("name", StringArgumentType.greedyString())
+                                    .executes(ctx -> homeSet(ctx, StringArgumentType.getString(ctx, "name")))));
 
             dispatcher.register(literal("delhome")
+                    .requires(Permissions.require("fhomes.delhome", true))
                             .then(argument("name", StringArgumentType.greedyString()).suggests(this::getHomeSuggestions)
                                     .executes(ctx -> homeDel(ctx, StringArgumentType.getString(ctx, "name")))));
 
             dispatcher.register(literal("homes")
-                    .executes(this::homeList)
-                    .then(literal("list")
+                    .requires(Permissions.require("fhomes.homes", true))
                             .executes(this::homeList)
-                            .then(argument("player", EntityArgumentType.player()).requires(source -> source.hasPermissionLevel(2))
-                                    .executes(ctx -> homeList(ctx, EntityArgumentType.getPlayer(ctx, "player")))))
-                    .then(literal("gui").requires(req -> false)
-                            .executes(ctx -> 0)) // TODO
-                    .then(literal("delete")
-                            .then(argument("name", StringArgumentType.greedyString()).suggests(this::getHomeSuggestions)
-                                    .executes(ctx -> homeDel(ctx, StringArgumentType.getString(ctx, "name")))))
-                    .then(config.generateCommand("config", 2)));
+                            .then(literal("list")
+                                    .executes(this::homeList)
+                                    .then(argument("player", EntityArgumentType.player()).requires(source -> source.hasPermissionLevel(2))
+                                            .executes(ctx -> homeList(ctx, EntityArgumentType.getPlayer(ctx, "player")))))
+                            .then(literal("gui").requires(req -> false)
+                                    .executes(ctx -> 0)) // TODO
+                            .then(literal("delete")
+                                    .then(argument("name", StringArgumentType.greedyString()).suggests(this::getHomeSuggestions)
+                                            .executes(ctx -> homeDel(ctx, StringArgumentType.getString(ctx, "name")))))
+                            .then(config.generateCommand("config", 2)));
         });
     }
 
